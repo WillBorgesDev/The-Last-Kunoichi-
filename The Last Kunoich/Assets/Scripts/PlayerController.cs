@@ -5,10 +5,10 @@ using System.Collections;
 public class PlayerController : MonoBehaviour
 {
   //Healt
-  public float maxHealth = 100f;
-  private float currentHealth;
-  private Image lifebar;
-  private Image redBar;
+  public float _maxHealth = 100f;
+  private float _currentHealth;
+  private Image _lifebar;
+  private Image _redBar;
 
   //Jump
   public float speed = 4f;
@@ -29,12 +29,10 @@ public class PlayerController : MonoBehaviour
     body = GetComponent<Rigidbody2D>();
     bc2d = GetComponent<BoxCollider2D>();
 
-    lifebar = GameObject.Find("LifeBar").GetComponent<Image>();
-    redBar = GameObject.Find("RedBar").GetComponent<Image>();
+    _lifebar = GameObject.Find("LifeBar").GetComponent<Image>();
+    _redBar = GameObject.Find("RedBar").GetComponent<Image>();
 
-    Debug.Log(lifebar);
-
-    currentHealth = maxHealth;
+    _currentHealth = _maxHealth;
   }
 
   // Update is called once per frame
@@ -125,34 +123,46 @@ public class PlayerController : MonoBehaviour
     sprite.flipX = !sprite.flipX;
   }
 
-  public void SetHealth(int amount)
+  public void TakeDamage(float damage)
   {
-    if (amount < 0)
+    SetHealth(damage, "damage");
+  }
+
+  public void Heal(float damage)
+  {
+    SetHealth(damage, "healing");
+  }
+
+  private void SetHealth(float amount, string type)
+  {
+    if (type == "healing")
     {
-      // Morreu
+      _currentHealth = Mathf.Clamp(_currentHealth + amount, 0, _maxHealth);
+    }
+    else if (type == "damage")
+    {
+      _currentHealth = Mathf.Clamp(_currentHealth - amount, 0, _maxHealth);
     }
 
-    currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
-
-    Vector3 lifebarScale = lifebar.rectTransform.localScale;
-    lifebarScale.x = (float)currentHealth / maxHealth;
-    lifebar.rectTransform.localScale = lifebarScale;
-    StartCoroutine(DecreasingRedBar(lifebarScale));
+    Vector3 _lifebarScale = _lifebar.rectTransform.localScale;
+    _lifebarScale.x = (float)_currentHealth / _maxHealth;
+    _lifebar.rectTransform.localScale = _lifebarScale;
+    StartCoroutine(DecreasingRedBar(_lifebarScale));
   }
 
   private IEnumerator DecreasingRedBar(Vector3 newScale)
   {
     yield return new WaitForSeconds(0.5f);
-    Vector3 redBarScale = redBar.transform.localScale;
+    Vector3 _redBarScale = _redBar.transform.localScale;
 
-    while (redBar.transform.localScale.x > newScale.x)
+    while (_redBar.transform.localScale.x > newScale.x)
     {
-      redBarScale.x -= Time.deltaTime * 0.25f;
-      redBar.transform.localScale = redBarScale;
+      _redBarScale.x -= Time.deltaTime * 0.25f;
+      _redBar.transform.localScale = _redBarScale;
 
       yield return null;
     }
 
-    redBar.transform.localScale = newScale;
+    _redBar.transform.localScale = newScale;
   }
 }
