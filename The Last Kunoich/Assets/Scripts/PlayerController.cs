@@ -7,14 +7,18 @@ public class PlayerController : MonoBehaviour
   //Healt
   public float _maxHealth = 100f;
   private float _currentHealth;
-  private Image _lifebar;
-  private Image _redBar;
+  public Image _lifebar;
+  public Image _redBar;
 
   //Jump
   public float speed = 4f;
   public bool onJump = false;
   private int nJump;
   public float jumpSpeed = 4f;
+
+  //Weapon
+  public float _damage = 10;
+
 
   [SerializeField] private LayerMask layerGround;
   [SerializeField] private LayerMask layerClimb;
@@ -121,6 +125,19 @@ public class PlayerController : MonoBehaviour
   void Flip()
   {
     sprite.flipX = !sprite.flipX;
+  }
+
+  void OnCollisionEnter2D(Collision2D other)
+  {
+    if (other.gameObject.tag == "Enemy")
+    {
+      var enemy = other.transform.GetComponent<EnemyController>();
+
+      if (enemy != null)
+      {
+        enemy.TakeDamage(_damage);
+      }
+    }
   }
 
   public void TakeDamage(float damage)
