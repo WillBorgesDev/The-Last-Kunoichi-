@@ -7,7 +7,6 @@ public class EnemyController : MonoBehaviour
 {
   //Enemy
   [Header("Enemy")]
-  public Vector2 _initialPosition;
   private GameObject enemy;
   private Rigidbody2D rb;
 
@@ -15,13 +14,9 @@ public class EnemyController : MonoBehaviour
   [Header("Move")]
   public bool _mustPatrol = true;
   public bool mustTurn = true;
-  private bool alredyTurn = false;
-  public float walkSpeed = 100f;
-  public float maxXGo = 5f;
-  public float minXGo = 1f;
-
-  [Header("Atack")]
-  public float _damage = 10;
+  public float walkSpeed = 7f;
+  public Transform[] points;
+  private int destPoint = 0;
 
   //Healt
   [Header("Healt")]
@@ -29,6 +24,9 @@ public class EnemyController : MonoBehaviour
   private float _currentHealth, kockBackStartTime;
   private Image _lifebar;
   private Image _redBar;
+
+  [Header("Atack")]
+  public float _damage = 10;
 
   [Header("Ground Config")]
   public LayerMask groundLayer;
@@ -48,7 +46,6 @@ public class EnemyController : MonoBehaviour
     _lifebar = barBG.transform.Find("LifeBarEnemy").gameObject.GetComponent<Image>();
     _redBar = barBG.transform.Find("RedBarEnemy").gameObject.GetComponent<Image>();
 
-    _initialPosition = enemy.transform.position;
     _currentHealth = _maxHealth;
   }
 
@@ -56,7 +53,14 @@ public class EnemyController : MonoBehaviour
   {
     if (_mustPatrol)
     {
-      Patrol();
+      if (points.Length > 0)
+      {
+        GotoNextPoint();
+      }
+      else
+      {
+        Patrol();
+      }
     }
   }
 
@@ -65,37 +69,7 @@ public class EnemyController : MonoBehaviour
     if (_mustPatrol)
     {
       mustTurn = !Physics2D.OverlapCircle(groundCheckPos.position, radius, groundLayer);
-
-      if (rb.position.x > _initialPosition.x + maxXGo && !alredyTurn)
-      {
-        alredyTurn = true;
-        mustTurn = true;
-        Invoke("Teste", 1);
-      }
-
-
-      if (rb.position.x < _initialPosition.x - minXGo && !alredyTurn)
-      {
-        alredyTurn = true;
-        mustTurn = true;
-        Invoke("Teste", 1);
-      }
-
-      Debug.Log(alredyTurn);
-
     }
-  }
-
-  void Teste()
-  {
-    alredyTurn = false;
-    mustTurn = false;
-  }
-
-  private IEnumerator AwaitToFlip(float time)
-  {
-    yield return new WaitForSeconds(time);
-    alredyTurn = false;
   }
 
   void Patrol()
@@ -114,6 +88,26 @@ public class EnemyController : MonoBehaviour
     enemy.transform.Rotate(0f, 180f, 0f);
     walkSpeed *= -1;
     _mustPatrol = true;
+  }
+
+  void GotoNextPoint()
+  {
+    if (mustTurn)
+    {
+      Flip();
+    }
+
+    // Returns if no points have been set up
+    if (points.Length == 0)
+      return;
+
+    // Set the agent to go to the currently selected destination.
+    enemy.transform.position = Vector2.MoveTowards(new Vector2(enemy.transform.position.x, 1), new Vector2(points[destPoint].position.x, 1), walkSpeed * Time.deltaTime);
+
+    if (Vector2.Distance(enemy.transform.position, points[destPoint].position) < 0.2f)
+    {
+      destPoint = (destPoint + 1) % points.Length;
+    }
   }
 
   void OnCollisionEnter2D(Collision2D other)

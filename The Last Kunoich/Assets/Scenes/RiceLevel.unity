@@ -33380,11 +33380,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e462976940864f4e914c4e1dfb51e63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _initialPosition: {x: 0, y: 0}
   _mustPatrol: 1
   mustTurn: 1
   walkSpeed: 167.18
-  maxXGo: 1
-  minXGo: -1
+  maxXGo: 8.21
+  minXGo: 2.08
   _damage: 10
   _maxHealth: 100
   groundLayer:
@@ -33453,7 +33454,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!212 &998790931
 SpriteRenderer:
   m_ObjectHideFlags: 0
