@@ -86,27 +86,19 @@ public class EnemyController : MonoBehaviour
   {
     _mustPatrol = false;
     enemy.transform.Rotate(0f, 180f, 0f);
-    walkSpeed *= -1;
+    if (points.Length == 0) walkSpeed *= -1;
     _mustPatrol = true;
   }
 
   void GotoNextPoint()
   {
-    if (mustTurn)
-    {
-      Flip();
-    }
-
-    // Returns if no points have been set up
-    if (points.Length == 0)
-      return;
-
     // Set the agent to go to the currently selected destination.
     enemy.transform.position = Vector2.MoveTowards(new Vector2(enemy.transform.position.x, 1), new Vector2(points[destPoint].position.x, 1), walkSpeed * Time.deltaTime);
 
     if (Vector2.Distance(enemy.transform.position, points[destPoint].position) < 0.2f)
     {
       destPoint = (destPoint + 1) % points.Length;
+      Flip();
     }
   }
 
