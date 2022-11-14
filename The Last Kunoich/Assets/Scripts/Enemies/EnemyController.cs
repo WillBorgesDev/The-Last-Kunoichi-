@@ -5,25 +5,41 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
+  enum State
+  {
+    idle,
+    moving,
+    findPlayer,
+    atack
+  }
+
   //Enemy
   [Header("Enemy")]
   private GameObject enemy;
   private Rigidbody2D rb;
+  private Animator anim;
+  private State currentState;
+  private float startTime;
 
   //Move
   [Header("Move")]
   public bool _mustPatrol = true;
   public bool mustTurn = true;
-  public float walkSpeed = 7f;
+  public float walkSpeed = 2f;
   public Transform[] points;
   private int destPoint = 0;
+
+  //Idle
+  [Header("Idle")]
+  public float idleTime = 2f;
+  private bool isAdleTimeOver = false;
+
 
   //Healt
   [Header("Healt")]
   public float _maxHealth = 100f;
   private float _currentHealth, kockBackStartTime;
-  private Image _lifebar;
-  private Image _redBar;
+  private Image _lifebarImage, _redBarImage;
 
   [Header("Atack")]
   public float _damage = 10;
@@ -36,6 +52,7 @@ public class EnemyController : MonoBehaviour
   void Start()
   {
     enemy = this.gameObject;
+    currentState = State.moving;
 
     rb = enemy.GetComponent<Rigidbody2D>();
 
@@ -43,25 +60,44 @@ public class EnemyController : MonoBehaviour
     var barBG = hud.transform.Find("Life Bar BG");
 
     groundCheckPos = enemy.transform.Find("GroundCheckPosition");
-    _lifebar = barBG.transform.Find("LifeBarEnemy").gameObject.GetComponent<Image>();
-    _redBar = barBG.transform.Find("RedBarEnemy").gameObject.GetComponent<Image>();
+    _lifebarImage = barBG.transform.Find("LifeBarEnemy").gameObject.GetComponent<Image>();
+    _redBarImage = barBG.transform.Find("RedBarEnemy").gameObject.GetComponent<Image>();
+
+    anim = enemy.GetComponent<Animator>();
 
     _currentHealth = _maxHealth;
+    startTime = Time.time;
   }
 
   void Update()
   {
-    if (_mustPatrol)
+    switch (currentState)
     {
-      if (points.Length > 0)
-      {
-        GotoNextPoint();
-      }
-      else
-      {
-        Patrol();
-      }
+      case State.idle:
+        Flip();
+        break;
+      case State.moving:
+        if (_mustPatrol)
+        {
+          if (points.Length > 0)
+          {
+            GotoNextPoint();
+          }
+          else
+          {
+            Patrol();
+          }
+        }
+        break;
+      default:
+        break;
     }
+
+  }
+  void SwitchState(State newState)
+  {
+    startTime = Time.time;
+    currentState = newState;
   }
 
   void FixedUpdate()
@@ -69,36 +105,38 @@ public class EnemyController : MonoBehaviour
     if (_mustPatrol)
     {
       mustTurn = !Physics2D.OverlapCircle(groundCheckPos.position, radius, groundLayer);
+
+      if (mustTurn) SwitchState(State.idle);
     }
   }
 
   void Patrol()
   {
-    if (mustTurn)
-    {
-      Flip();
-    }
-
     rb.velocity = new Vector2(walkSpeed * Time.fixedDeltaTime, rb.velocity.y);
   }
 
   void Flip()
   {
     _mustPatrol = false;
-    enemy.transform.Rotate(0f, 180f, 0f);
-    if (points.Length == 0) walkSpeed *= -1;
-    _mustPatrol = true;
+
+    if (Time.time >= startTime + idleTime)
+    {
+      enemy.transform.Rotate(0f, 180f, 0f);
+      SwitchState(State.moving);
+      if (points.Length == 0) walkSpeed *= -1;
+      _mustPatrol = true;
+    }
+
   }
 
   void GotoNextPoint()
   {
-    // Set the agent to go to the currently selected destination.
     enemy.transform.position = Vector2.MoveTowards(new Vector2(enemy.transform.position.x, 1), new Vector2(points[destPoint].position.x, 1), walkSpeed * Time.deltaTime);
 
     if (Vector2.Distance(enemy.transform.position, points[destPoint].position) < 0.2f)
     {
       destPoint = (destPoint + 1) % points.Length;
-      Flip();
+      SwitchState(State.idle);
     }
   }
 
@@ -146,26 +184,26 @@ public class EnemyController : MonoBehaviour
     // SwitchState(State.Knockback);
 
 
-    Vector3 _lifebarScale = _lifebar.rectTransform.localScale;
+    Vector3 _lifebarScale = _lifebarImage.rectTransform.localScale;
     _lifebarScale.x = (float)_currentHealth / _maxHealth;
-    _lifebar.rectTransform.localScale = _lifebarScale;
+    _lifebarImage.rectTransform.localScale = _lifebarScale;
     StartCoroutine(DecreasingRedBar(_lifebarScale));
   }
 
   private IEnumerator DecreasingRedBar(Vector3 newScale)
   {
     yield return new WaitForSeconds(0.5f);
-    Vector3 _redBarScale = _redBar.transform.localScale;
+    Vector3 _redBarScale = _redBarImage.transform.localScale;
 
-    while (_redBar.transform.localScale.x > newScale.x)
+    while (_redBarImage.transform.localScale.x > newScale.x)
     {
       _redBarScale.x -= Time.deltaTime * 0.25f;
-      _redBar.transform.localScale = _redBarScale;
+      _redBarImage.transform.localScale = _redBarScale;
 
       yield return null;
     }
 
-    _redBar.transform.localScale = newScale;
+    _redBarImage.transform.localScale = newScale;
   }
 
   void OnDrawGizmosSelected()
