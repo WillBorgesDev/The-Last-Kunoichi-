@@ -28,6 +28,7 @@ public class EnemyController : MonoBehaviour
   public float walkSpeed = 2f;
   public Transform[] points;
   private int destPoint = 0;
+  private Vector2 _initialPosition;
   private bool _helperTurn = false;
 
   //Idle
@@ -44,6 +45,7 @@ public class EnemyController : MonoBehaviour
   [Header("Atack")]
   public float rayToIdentifyPlayer = 5f;
   public float _damage = 10;
+  public float maxGoWhenDetectPlayer = 10f;
 
   [Header("Ground Config")]
   public LayerMask playerLayer;
@@ -68,6 +70,7 @@ public class EnemyController : MonoBehaviour
     anim = enemy.GetComponent<Animator>();
 
     _currentHealth = _maxHealth;
+    _initialPosition = enemy.transform.position;
     startTime = Time.time;
   }
 
@@ -82,16 +85,11 @@ public class EnemyController : MonoBehaviour
         Moving();
         break;
       case State.atack:
+        Atack();
         break;
       default:
         break;
     }
-  }
-
-  void SwitchState(State newState)
-  {
-    startTime = Time.time;
-    currentState = newState;
   }
 
   void FixedUpdate()
@@ -106,6 +104,12 @@ public class EnemyController : MonoBehaviour
     }
   }
 
+  void SwitchState(State newState)
+  {
+    startTime = Time.time;
+    currentState = newState;
+  }
+
   void VerifyHasPlayer()
   {
     RaycastHit2D hit = Physics2D.Raycast(enemy.transform.position, !_helperTurn ? Vector2.right : Vector2.left, rayToIdentifyPlayer, playerLayer);
@@ -114,7 +118,10 @@ public class EnemyController : MonoBehaviour
 
     if (hit.collider != null)
     {
-      SwitchState(State.atack);
+      if (hit.collider.tag == "Player")
+      {
+        SwitchState(State.atack);
+      }
     }
   }
 
@@ -163,6 +170,27 @@ public class EnemyController : MonoBehaviour
       destPoint = (destPoint + 1) % points.Length;
       SwitchState(State.idle);
     }
+  }
+
+  void Atack()
+  {
+    var player = GameObject.Find("Player");
+
+    enemy.transform.position = Vector2.MoveTowards(new Vector2(enemy.transform.position.x, 1), player.transform.position, walkSpeed * Time.deltaTime);
+
+    // if (Vector2.Distance(enemy.transform.position, player.transform.position) < 0.2f) { }
+    Debug.Log("------------------------------------------");
+    Debug.Log(Vector2.Distance(enemy.transform.position, player.transform.position));
+    // Debug.Log("salve");
+    // Debug.Log("salve");
+
+
+    if (Vector2.Distance(enemy.transform.position, _initialPosition) > maxGoWhenDetectPlayer)
+    {
+      Debug.Log("salve");
+      SwitchState(State.idle);
+    }
+
   }
 
   void OnCollisionEnter2D(Collision2D other)
