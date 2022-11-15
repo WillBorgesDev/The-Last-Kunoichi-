@@ -16,9 +16,9 @@ public class EnemyController : MonoBehaviour
   //Enemy
   [Header("Enemy")]
   private GameObject enemy;
+  private State currentState;
   private Rigidbody2D rb;
   private Animator anim;
-  private State currentState;
   private float startTime;
 
   //Move
@@ -28,12 +28,12 @@ public class EnemyController : MonoBehaviour
   public float walkSpeed = 2f;
   public Transform[] points;
   private int destPoint = 0;
+  private bool _helperTurn = false;
 
   //Idle
   [Header("Idle")]
   public float idleTime = 2f;
   private bool isAdleTimeOver = false;
-
 
   //Healt
   [Header("Healt")]
@@ -42,9 +42,11 @@ public class EnemyController : MonoBehaviour
   private Image _lifebarImage, _redBarImage;
 
   [Header("Atack")]
+  public float rayToIdentifyPlayer = 5f;
   public float _damage = 10;
 
   [Header("Ground Config")]
+  public LayerMask playerLayer;
   public LayerMask groundLayer;
   public float radius = 0.3f;
   private Transform groundCheckPos;
@@ -99,14 +101,27 @@ public class EnemyController : MonoBehaviour
     startTime = Time.time;
     currentState = newState;
   }
-
   void FixedUpdate()
   {
+    VerifyHasPlayer();
     if (_mustPatrol)
     {
       mustTurn = !Physics2D.OverlapCircle(groundCheckPos.position, radius, groundLayer);
 
       if (mustTurn) SwitchState(State.idle);
+    }
+  }
+
+  void VerifyHasPlayer()
+  {
+    RaycastHit2D hit = Physics2D.Raycast(enemy.transform.position, !_helperTurn ? Vector2.right : Vector2.left, rayToIdentifyPlayer, playerLayer);
+
+    Debug.DrawRay(enemy.transform.position, !_helperTurn ? Vector2.right : Vector2.left);
+
+    if (hit.collider != null)
+    {
+      // Destroy(hit.transform.gameObject);
+      Debug.Log(hit.collider.tag);
     }
   }
 
@@ -123,8 +138,11 @@ public class EnemyController : MonoBehaviour
     {
       enemy.transform.Rotate(0f, 180f, 0f);
       SwitchState(State.moving);
+
       if (points.Length == 0) walkSpeed *= -1;
+
       _mustPatrol = true;
+      _helperTurn = !_helperTurn;
     }
 
   }
