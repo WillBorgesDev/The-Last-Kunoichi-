@@ -9,8 +9,8 @@ public class EnemyController : MonoBehaviour
   {
     idle,
     moving,
-    findPlayer,
-    atack
+    atack,
+    dead
   }
 
   //Enemy
@@ -79,31 +79,25 @@ public class EnemyController : MonoBehaviour
         Flip();
         break;
       case State.moving:
-        if (_mustPatrol)
-        {
-          if (points.Length > 0)
-          {
-            GotoNextPoint();
-          }
-          else
-          {
-            Patrol();
-          }
-        }
+        Moving();
+        break;
+      case State.atack:
         break;
       default:
         break;
     }
-
   }
+
   void SwitchState(State newState)
   {
     startTime = Time.time;
     currentState = newState;
   }
+
   void FixedUpdate()
   {
     VerifyHasPlayer();
+
     if (_mustPatrol)
     {
       mustTurn = !Physics2D.OverlapCircle(groundCheckPos.position, radius, groundLayer);
@@ -120,14 +114,8 @@ public class EnemyController : MonoBehaviour
 
     if (hit.collider != null)
     {
-      // Destroy(hit.transform.gameObject);
-      Debug.Log(hit.collider.tag);
+      SwitchState(State.atack);
     }
-  }
-
-  void Patrol()
-  {
-    rb.velocity = new Vector2(walkSpeed * Time.fixedDeltaTime, rb.velocity.y);
   }
 
   void Flip()
@@ -144,7 +132,26 @@ public class EnemyController : MonoBehaviour
       _mustPatrol = true;
       _helperTurn = !_helperTurn;
     }
+  }
 
+  void Moving()
+  {
+    if (_mustPatrol)
+    {
+      if (points.Length > 0)
+      {
+        GotoNextPoint();
+      }
+      else
+      {
+        Patrol();
+      }
+    }
+  }
+
+  void Patrol()
+  {
+    rb.velocity = new Vector2(walkSpeed * Time.fixedDeltaTime, rb.velocity.y);
   }
 
   void GotoNextPoint()
