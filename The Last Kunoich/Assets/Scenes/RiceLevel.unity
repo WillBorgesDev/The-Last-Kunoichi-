@@ -33480,7 +33480,12 @@ MonoBehaviour:
   - {fileID: 849875437}
   idleTime: 2
   _maxHealth: 100
+  rayToIdentifyPlayer: 6.88
   _damage: 10
+  maxGoWhenDetectPlayer: 10
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 128
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -33546,7 +33551,7 @@ Rigidbody2D:
   m_Material: {fileID: 0}
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!212 &998790931
 SpriteRenderer:
@@ -41542,7 +41547,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 1.5147209, y: -0.16208291}
+  m_Offset: {x: 1.6457187, y: 0.3344431}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -41553,7 +41558,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.5414853, y: 2.131887}
+  m_Size: {x: 2.2113535, y: 3.124939}
   m_EdgeRadius: 0
 --- !u!50 &1792120816
 Rigidbody2D:

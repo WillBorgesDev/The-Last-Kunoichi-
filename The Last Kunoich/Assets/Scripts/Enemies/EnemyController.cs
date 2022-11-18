@@ -112,15 +112,22 @@ public class EnemyController : MonoBehaviour
 
   void VerifyHasPlayer()
   {
-    RaycastHit2D hit = Physics2D.Raycast(enemy.transform.position, !_helperTurn ? Vector2.right : Vector2.left, rayToIdentifyPlayer, playerLayer);
+    RaycastHit2D[] hits = Physics2D.RaycastAll(enemy.transform.position, !_helperTurn ? Vector2.right : Vector2.left, rayToIdentifyPlayer, playerLayer);
 
     Debug.DrawRay(enemy.transform.position, !_helperTurn ? Vector2.right : Vector2.left);
 
-    if (hit.collider != null)
+    if (hits != null)
     {
-      if (hit.collider.tag == "Player")
+      foreach (RaycastHit2D hit in hits)
       {
-        SwitchState(State.atack);
+        if (hit.collider.tag == "Player" && Vector2.Distance(enemy.transform.position, _initialPosition) < maxGoWhenDetectPlayer)
+        {
+          SwitchState(State.atack);
+        }
+        else if (hit.collider.tag == "Player")
+        {
+          SwitchState(State.idle);
+        }
       }
     }
   }
@@ -178,17 +185,9 @@ public class EnemyController : MonoBehaviour
 
     enemy.transform.position = Vector2.MoveTowards(new Vector2(enemy.transform.position.x, 1), player.transform.position, walkSpeed * Time.deltaTime);
 
-    // if (Vector2.Distance(enemy.transform.position, player.transform.position) < 0.2f) { }
-    Debug.Log("------------------------------------------");
-    Debug.Log(Vector2.Distance(enemy.transform.position, player.transform.position));
-    // Debug.Log("salve");
-    // Debug.Log("salve");
-
-
-    if (Vector2.Distance(enemy.transform.position, _initialPosition) > maxGoWhenDetectPlayer)
+    if (Vector2.Distance(enemy.transform.position, player.transform.position) < 0.2f)
     {
-      Debug.Log("salve");
-      SwitchState(State.idle);
+      //TODO ATACK ANimation
     }
 
   }
