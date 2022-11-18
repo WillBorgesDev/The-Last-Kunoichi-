@@ -736,7 +736,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.1069907, y: 3.320972, z: -7.1273594}
+  m_LocalPosition: {x: 1.4, y: 3.320972, z: -7.1273594}
   m_LocalScale: {x: 1.8449844, y: 1.8449844, z: 1.8449844}
   m_Children: []
   m_Father: {fileID: 1792120812}
@@ -27084,7 +27084,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 849875436}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.72, y: 0, z: 0}
+  m_LocalPosition: {x: 19.2, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 740840601}
@@ -33472,12 +33472,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e462976940864f4e914c4e1dfb51e63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _mustPatrol: 1
-  mustTurn: 1
-  walkSpeed: 5.27
+  walkSpeed: 3
   points:
-  - {fileID: 608668911}
   - {fileID: 849875437}
+  - {fileID: 608668911}
   idleTime: 2
   _maxHealth: 100
   rayToIdentifyPlayer: 6.88
@@ -41443,7 +41441,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1792120811}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 75.6, y: 1.6, z: -6.3008}
+  m_LocalPosition: {x: 73.12, y: 1.6, z: -6.3008}
   m_LocalScale: {x: 0.45281202, y: 0.45281202, z: 0.45281202}
   m_Children:
   - {fileID: 1785043045}
