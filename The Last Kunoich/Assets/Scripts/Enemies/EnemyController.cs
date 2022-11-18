@@ -23,13 +23,12 @@ public class EnemyController : MonoBehaviour
 
   //Move
   [Header("Move")]
-  public bool _mustPatrol = true;
-  public bool mustTurn = true;
   public float walkSpeed = 2f;
   public Transform[] points;
   private int destPoint = 0;
   private Vector2 _initialPosition;
   private bool _helperTurn = false;
+  private bool _mustPatrol = true;
 
   //Idle
   [Header("Idle")]
@@ -72,6 +71,27 @@ public class EnemyController : MonoBehaviour
     _currentHealth = _maxHealth;
     _initialPosition = enemy.transform.position;
     startTime = Time.time;
+
+    if (points != null)
+    {
+      if (points[0].position.x < enemy.transform.position.x)
+      {
+        _helperTurn = true;
+        enemy.transform.Rotate(0f, 180f, 0f);
+      }
+      else
+      {
+        _helperTurn = false;
+      }
+    }
+    else
+    {
+      if (_helperTurn)
+      {
+        enemy.transform.Rotate(0f, 180f, 0f);
+        walkSpeed *= -1;
+      }
+    }
   }
 
   void Update()
@@ -98,7 +118,7 @@ public class EnemyController : MonoBehaviour
 
     if (_mustPatrol)
     {
-      mustTurn = !Physics2D.OverlapCircle(groundCheckPos.position, radius, groundLayer);
+      var mustTurn = !Physics2D.OverlapCircle(groundCheckPos.position, radius, groundLayer);
 
       if (mustTurn) SwitchState(State.idle);
     }
@@ -141,7 +161,17 @@ public class EnemyController : MonoBehaviour
       enemy.transform.Rotate(0f, 180f, 0f);
       SwitchState(State.moving);
 
-      if (points.Length == 0) walkSpeed *= -1;
+      if (points.Length == 0)
+      {
+        if (_helperTurn)
+        {
+          walkSpeed *= -1;
+        }
+        else
+        {
+          walkSpeed *= 1;
+        }
+      }
 
       _mustPatrol = true;
       _helperTurn = !_helperTurn;
@@ -175,6 +205,7 @@ public class EnemyController : MonoBehaviour
     if (Vector2.Distance(enemy.transform.position, points[destPoint].position) < 0.2f)
     {
       destPoint = (destPoint + 1) % points.Length;
+
       SwitchState(State.idle);
     }
   }
