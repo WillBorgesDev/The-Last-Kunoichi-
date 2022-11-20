@@ -27,7 +27,6 @@ public class EnemyController : MonoBehaviour
   public float walkSpeed = 2f;
   public Transform[] points;
   private int destPoint = 0;
-  private Vector2 _initialPosition;
   private bool _mustPatrol = true;
 
   //Idle
@@ -38,13 +37,13 @@ public class EnemyController : MonoBehaviour
   //Healt
   [Header("Healt")]
   public float _maxHealth = 100f;
-  private float _currentHealth, kockBackStartTime;
+  private float _currentHealth;
   private Image _lifebarImage, _redBarImage;
 
   [Header("Atack")]
   public float rayToIdentifyPlayer = 5f;
   public float _damage = 10;
-  public float maxGoWhenDetectPlayer = 10f;
+  public float distanceToNotAtack = 10f;
 
   [Header("Ground Config")]
   public LayerMask playerLayer;
@@ -70,7 +69,6 @@ public class EnemyController : MonoBehaviour
 
 
     _currentHealth = _maxHealth;
-    _initialPosition = points.Length >= 0 ? points[0].position : enemy.transform.position;
     startTime = Time.time;
 
     TurnAround();
@@ -202,15 +200,7 @@ public class EnemyController : MonoBehaviour
       {
         var playerTag = hit.collider.tag == "Player";
 
-        if (playerTag && enemy.transform.position.x < _initialPosition.x - maxGoWhenDetectPlayer)
-        {
-          SwitchState(State.idle);
-        }
-        else if (playerTag && enemy.transform.position.x > _initialPosition.x)
-        {
-          SwitchState(State.idle);
-        }
-        else if (playerTag)
+        if (playerTag)
         {
           SwitchState(State.atack);
         }
@@ -221,8 +211,14 @@ public class EnemyController : MonoBehaviour
   void Atack()
   {
     var player = GameObject.Find("Player");
+    var distance = Vector2.Distance(player.transform.position, enemy.transform.position);
 
     enemy.transform.position = Vector2.MoveTowards(new Vector2(enemy.transform.position.x, 1), player.transform.position, walkSpeed * Time.deltaTime);
+
+    if (distance > distanceToNotAtack)
+    {
+      SwitchState(State.idle);
+    }
 
     if (player.transform.position.x < enemy.transform.position.x)
     {
