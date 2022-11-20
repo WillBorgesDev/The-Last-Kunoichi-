@@ -20,6 +20,7 @@ public class EnemyController : MonoBehaviour
   private Rigidbody2D rb;
   private Animator anim;
   private float startTime;
+  private SpriteRenderer sp;
 
   //Move
   [Header("Move")]
@@ -27,7 +28,6 @@ public class EnemyController : MonoBehaviour
   public Transform[] points;
   private int destPoint = 0;
   private Vector2 _initialPosition;
-  private bool _helperTurn = false;
   private bool _mustPatrol = true;
 
   //Idle
@@ -58,6 +58,8 @@ public class EnemyController : MonoBehaviour
     currentState = State.moving;
 
     rb = enemy.GetComponent<Rigidbody2D>();
+    sp = enemy.GetComponent<SpriteRenderer>();
+    anim = enemy.GetComponent<Animator>();
 
     var hud = enemy.transform.Find("HUD");
     var barBG = hud.transform.Find("Life Bar BG");
@@ -66,32 +68,12 @@ public class EnemyController : MonoBehaviour
     _lifebarImage = barBG.transform.Find("LifeBarEnemy").gameObject.GetComponent<Image>();
     _redBarImage = barBG.transform.Find("RedBarEnemy").gameObject.GetComponent<Image>();
 
-    anim = enemy.GetComponent<Animator>();
 
     _currentHealth = _maxHealth;
-    _initialPosition = enemy.transform.position;
+    _initialPosition = points.Length >= 0 ? points[0].position : enemy.transform.position;
     startTime = Time.time;
 
-    if (points != null)
-    {
-      if (points[0].position.x < enemy.transform.position.x)
-      {
-        _helperTurn = true;
-        enemy.transform.Rotate(0f, 180f, 0f);
-      }
-      else
-      {
-        _helperTurn = false;
-      }
-    }
-    else
-    {
-      if (_helperTurn)
-      {
-        enemy.transform.Rotate(0f, 180f, 0f);
-        walkSpeed *= -1;
-      }
-    }
+    TurnAround();
   }
 
   void Update()
@@ -130,52 +112,49 @@ public class EnemyController : MonoBehaviour
     currentState = newState;
   }
 
-  void VerifyHasPlayer()
-  {
-    RaycastHit2D[] hits = Physics2D.RaycastAll(enemy.transform.position, !_helperTurn ? Vector2.right : Vector2.left, rayToIdentifyPlayer, playerLayer);
-
-    Debug.DrawRay(enemy.transform.position, !_helperTurn ? Vector2.right : Vector2.left);
-
-    if (hits != null)
-    {
-      foreach (RaycastHit2D hit in hits)
-      {
-        if (hit.collider.tag == "Player" && Vector2.Distance(enemy.transform.position, _initialPosition) < maxGoWhenDetectPlayer)
-        {
-          SwitchState(State.atack);
-        }
-        else if (hit.collider.tag == "Player")
-        {
-          SwitchState(State.idle);
-        }
-      }
-    }
-  }
-
   void Flip()
   {
     _mustPatrol = false;
 
     if (Time.time >= startTime + idleTime)
     {
-      enemy.transform.Rotate(0f, 180f, 0f);
       SwitchState(State.moving);
-
-      if (points.Length == 0)
-      {
-        if (_helperTurn)
-        {
-          walkSpeed *= -1;
-        }
-        else
-        {
-          walkSpeed *= 1;
-        }
-      }
-
+      TurnAround();
       _mustPatrol = true;
-      _helperTurn = !_helperTurn;
     }
+  }
+
+  void TurnAround()
+  {
+    if (points != null)
+    {
+      if (points[destPoint].position.x < enemy.transform.position.x)
+      {
+        sp.flipX = true;
+      }
+      else
+      {
+        sp.flipX = false;
+      }
+    }
+    else
+    {
+      if (sp.flipX)
+      {
+        sp.flipX = false;
+        walkSpeed *= -1;
+      }
+      else
+      {
+        sp.flipX = true;
+        walkSpeed *= 1;
+      }
+    }
+  }
+
+  void TurnGroundCheck()
+  {
+    groundCheckPos.transform.Rotate(0f, 180f, 0f);
   }
 
   void Moving()
@@ -202,6 +181,7 @@ public class EnemyController : MonoBehaviour
   {
     enemy.transform.position = Vector2.MoveTowards(new Vector2(enemy.transform.position.x, 1), new Vector2(points[destPoint].position.x, 1), walkSpeed * Time.deltaTime);
 
+
     if (Vector2.Distance(enemy.transform.position, points[destPoint].position) < 0.2f)
     {
       destPoint = (destPoint + 1) % points.Length;
@@ -210,11 +190,48 @@ public class EnemyController : MonoBehaviour
     }
   }
 
+  void VerifyHasPlayer()
+  {
+    RaycastHit2D[] hits = Physics2D.RaycastAll(enemy.transform.position, !sp.flipX ? Vector2.right : Vector2.left, rayToIdentifyPlayer, playerLayer);
+
+    Debug.DrawRay(enemy.transform.position, !sp.flipX ? Vector2.right : Vector2.left);
+
+    if (hits != null)
+    {
+      foreach (RaycastHit2D hit in hits)
+      {
+        var playerTag = hit.collider.tag == "Player";
+
+        if (playerTag && enemy.transform.position.x < _initialPosition.x - maxGoWhenDetectPlayer)
+        {
+          SwitchState(State.idle);
+        }
+        else if (playerTag && enemy.transform.position.x > _initialPosition.x)
+        {
+          SwitchState(State.idle);
+        }
+        else if (playerTag)
+        {
+          SwitchState(State.atack);
+        }
+      }
+    }
+  }
+
   void Atack()
   {
     var player = GameObject.Find("Player");
 
     enemy.transform.position = Vector2.MoveTowards(new Vector2(enemy.transform.position.x, 1), player.transform.position, walkSpeed * Time.deltaTime);
+
+    if (player.transform.position.x < enemy.transform.position.x)
+    {
+      sp.flipX = true;
+    }
+    else
+    {
+      sp.flipX = false;
+    }
 
     if (Vector2.Distance(enemy.transform.position, player.transform.position) < 0.2f)
     {
@@ -263,9 +280,6 @@ public class EnemyController : MonoBehaviour
       Destroy(this.gameObject);
       // SwitchState(State.Dead);
     }
-
-    // SwitchState(State.Knockback);
-
 
     Vector3 _lifebarScale = _lifebarImage.rectTransform.localScale;
     _lifebarScale.x = (float)_currentHealth / _maxHealth;
