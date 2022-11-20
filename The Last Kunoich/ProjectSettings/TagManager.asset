@@ -7,6 +7,8 @@ TagManager:
   - Climb
   - Fisic
   - Enemy
+  - Door
+  - BasicAtack
   layers:
   - Default
   - TransparentFX
@@ -17,7 +19,7 @@ TagManager:
   - Climb
   - Player
   - Enemy
-  - 
+  - Explosion
   - 
   - 
   - 

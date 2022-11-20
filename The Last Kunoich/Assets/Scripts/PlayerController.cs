@@ -1,9 +1,17 @@
+using System.Net.Mime;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
 
 public class PlayerController : MonoBehaviour
 {
+
+  //instance gameobject
+  public GameObject shuriken;
+  public GameObject bomb;
+	public Transform targetR;
+  public Transform targetL;
   //Healt
   public float _maxHealth = 100f;
   private float _currentHealth;
@@ -11,13 +19,16 @@ public class PlayerController : MonoBehaviour
   public Image _redBar;
 
   //Jump
-  public float speed = 4f;
+  float speed = 6f;
   public bool onJump = false;
   private int nJump;
-  public float jumpSpeed = 4f;
+  float jumpSpeed = 12f;
 
   //Weapon
+  public bool basicAttack = false;
   public float _damage = 10;
+  public static int targetSide;
+  bool hasShuriken;
 
 
   [SerializeField] private LayerMask layerGround;
@@ -26,13 +37,17 @@ public class PlayerController : MonoBehaviour
   SpriteRenderer sprite;
   Rigidbody2D body;
   BoxCollider2D bc2d;
+  Animator anim;
+  Image icon;
 
   void Start()
   {
     sprite = GetComponent<SpriteRenderer>();
     body = GetComponent<Rigidbody2D>();
+    anim = GetComponent<Animator>();
     bc2d = GetComponent<BoxCollider2D>();
-
+    icon = GetComponent<Image>();
+    
     _lifebar = GameObject.Find("LifeBar").GetComponent<Image>();
     _redBar = GameObject.Find("RedBar").GetComponent<Image>();
 
@@ -44,14 +59,33 @@ public class PlayerController : MonoBehaviour
   {
     Move();
     // MoveJoystick();
-
+    if (Input.GetKeyDown(KeyCode.J))
+        {
+           basicAttack = true;
+           speed = speed * 0;
+        }
+    if (Input.GetKeyDown(KeyCode.K))
+        {
+          if(targetSide == 1){
+            Instantiate(shuriken, targetR.position, targetR.rotation);
+          } else {
+            Instantiate(shuriken, targetL.position, targetL.rotation);
+          } 
+        }
+    if (Input.GetKeyDown(KeyCode.L))
+        {
+          if(targetSide == 1){
+            Instantiate(bomb, targetR.position, targetR.rotation);
+          } else {
+            Instantiate(bomb, targetL.position, targetL.rotation);
+          }
+          
+        }
   }
-
   void Move()
   {
     if (Input.GetButtonDown("Jump") && isGrounded())
     {
-      // anim.Play("Jump");
       Jump();
     }
 
@@ -66,14 +100,21 @@ public class PlayerController : MonoBehaviour
 
     if (horizontal < 0 && sprite.flipX == false)
     {
+      targetSide = -1;
+      shuriken.GetComponent<ShurikenController>().side = targetSide;
+      bomb.GetComponent<BombController>().side = targetSide;
       Flip();
     }
     else if (horizontal > 0 && sprite.flipX == true)
     {
+      targetSide = 1;
+      shuriken.GetComponent<ShurikenController>().side = targetSide;
+      bomb.GetComponent<BombController>().side = targetSide;
       Flip();
     }
-  }
 
+    PlayerAnimator();
+  }
   void MoveJoystick()
   {
     float horizontalJoystick = Input.GetAxis("HorizontalJoystick");
@@ -88,6 +129,7 @@ public class PlayerController : MonoBehaviour
 
     if (isClimb())
     {
+      anim.Play("climb");
       float vertical = Input.GetAxis("VerticalJoystick");
       body.velocity = new UnityEngine.Vector2(body.velocity.x, vertical * speed / 2);
     }
@@ -102,6 +144,33 @@ public class PlayerController : MonoBehaviour
       Flip();
     }
   }
+  void PlayerAnimator()
+    {
+        // Iniciando animações do player
+        if(body.velocity.x == 0 && body.velocity.y == 0 && isGrounded() && !isClimb() && !basicAttack)
+        {
+            anim.Play("idle");
+            //Inicia a animação dela parada
+        }
+        else if(body.velocity.x != 0 && isGrounded() && !isClimb() && !basicAttack)
+        {
+            anim.Play("Running");
+            //Inicia a animação dela correndo 
+        } else if (body.velocity.x != 0 && isGrounded() && !isClimb() && basicAttack)
+        {
+           anim.Play("BasicAttack");
+        }
+        else if(body.velocity.y != 0 && body.velocity.x != 0) 
+        {
+            // anim.Play("Jump");
+        } else if (isClimb() && !basicAttack)
+        {
+          anim.Play("climb");
+        } else if (basicAttack)
+        {
+           anim.Play("BasicAttack");
+        } 
+    }
 
   private bool isGrounded()
   {
@@ -181,5 +250,11 @@ public class PlayerController : MonoBehaviour
     }
 
     _redBar.transform.localScale = newScale;
+  }
+
+  void finishAttack()
+  {
+    basicAttack = false;
+    speed = 6f;
   }
 }
