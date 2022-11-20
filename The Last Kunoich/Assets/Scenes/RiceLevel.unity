@@ -33698,7 +33698,7 @@ MonoBehaviour:
   _maxHealth: 100
   rayToIdentifyPlayer: 6.88
   _damage: 10
-  maxGoWhenDetectPlayer: 10
+  distanceToNotAtack: 4.79
   playerLayer:
     serializedVersion: 2
     m_Bits: 128
@@ -34821,7 +34821,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e462976940864f4e914c4e1dfb51e63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  walkSpeed: 4.83
+  walkSpeed: 3.48
   points:
   - {fileID: 342705243}
   - {fileID: 916584074}
@@ -34829,7 +34829,7 @@ MonoBehaviour:
   _maxHealth: 100
   rayToIdentifyPlayer: 4.98
   _damage: 10
-  maxGoWhenDetectPlayer: 10.42
+  distanceToNotAtack: 4.17
   playerLayer:
     serializedVersion: 2
     m_Bits: 128
