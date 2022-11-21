@@ -7,6 +7,11 @@ TagManager:
   - Climb
   - Fisic
   - Enemy
+  - Door
+  - BasicAtack
+  - DashAttack
+  - Shuriken
+  - BombExplode
   layers:
   - Default
   - TransparentFX
@@ -17,7 +22,7 @@ TagManager:
   - Climb
   - Player
   - Enemy
-  - 
+  - Explosion
   - 
   - 
   - 
