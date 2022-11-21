@@ -9,6 +9,9 @@ TagManager:
   - Enemy
   - Door
   - BasicAtack
+  - DashAttack
+  - Shuriken
+  - BombExplode
   layers:
   - Default
   - TransparentFX

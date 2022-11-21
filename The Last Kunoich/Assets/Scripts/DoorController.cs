@@ -31,7 +31,7 @@ public class DoorController : MonoBehaviour
     }
     void OnTriggerEnter2D(Collider2D collider)
     {
-        if(collider.tag == "BasicAtack")
+        if(collider.tag == "BasicAtack" || collider.tag == "DashAttack")
         {
             anim.Play("BrokenDoor");
             timeOn = true;

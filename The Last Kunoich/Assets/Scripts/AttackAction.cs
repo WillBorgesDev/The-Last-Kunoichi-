@@ -15,10 +15,10 @@ public class AttackAction : MonoBehaviour
     {
         if (PlayerController.targetSide == 1)
         {
-            colliderATK.offset = new Vector2(0.09f, 0.02f);
+            colliderATK.offset = new Vector2(0.13f, 0.02f);
         } if (PlayerController.targetSide == -1)
         {
-            colliderATK.offset = new Vector2(-0.09f, 0.02f);
+            colliderATK.offset = new Vector2(-0.13f, 0.02f);
         }
     }
 }
