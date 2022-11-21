@@ -8,9 +8,17 @@ public class EnemyController : MonoBehaviour
   enum State
   {
     idle,
-    moving,
+    patrol,
+    followPlayer,
     atack,
     dead
+  }
+
+  struct AnimTypes
+  {
+    public const string attack = "attack";
+    public const string walking = "walking";
+    public const string idle = "idle";
   }
 
   //Enemy
@@ -41,9 +49,8 @@ public class EnemyController : MonoBehaviour
   private Image _lifebarImage, _redBarImage;
 
   [Header("Atack")]
-  public float rayToIdentifyPlayer = 5f;
   public float _damage = 10;
-  public float distanceToNotAtack = 10f;
+  public float distanceToNotAtack = 5f;
 
   [Header("Ground Config")]
   public LayerMask playerLayer;
@@ -54,7 +61,7 @@ public class EnemyController : MonoBehaviour
   void Start()
   {
     enemy = this.gameObject;
-    currentState = State.moving;
+    currentState = State.patrol;
 
     rb = enemy.GetComponent<Rigidbody2D>();
     sp = enemy.GetComponent<SpriteRenderer>();
@@ -67,7 +74,6 @@ public class EnemyController : MonoBehaviour
     _lifebarImage = barBG.transform.Find("LifeBarEnemy").gameObject.GetComponent<Image>();
     _redBarImage = barBG.transform.Find("RedBarEnemy").gameObject.GetComponent<Image>();
 
-
     _currentHealth = _maxHealth;
     startTime = Time.time;
 
@@ -76,16 +82,24 @@ public class EnemyController : MonoBehaviour
 
   void Update()
   {
+    if (currentState != State.atack)
+    {
+      VerifyHasPlayer();
+    }
+
     switch (currentState)
     {
       case State.idle:
         Flip();
         break;
-      case State.moving:
+      case State.patrol:
         Moving();
         break;
+      case State.followPlayer:
+        FollowPLayer();
+        break;
       case State.atack:
-        Atack();
+        Attack();
         break;
       default:
         break;
@@ -94,8 +108,6 @@ public class EnemyController : MonoBehaviour
 
   void FixedUpdate()
   {
-    VerifyHasPlayer();
-
     if (_mustPatrol)
     {
       var mustTurn = !Physics2D.OverlapCircle(groundCheckPos.position, radius, groundLayer);
@@ -114,11 +126,16 @@ public class EnemyController : MonoBehaviour
   {
     _mustPatrol = false;
 
+    anim.Play(AnimTypes.idle);
+
     if (Time.time >= startTime + idleTime)
     {
-      SwitchState(State.moving);
-      TurnAround();
-      _mustPatrol = true;
+      if (anim.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !anim.IsInTransition(0))
+      {
+        SwitchState(State.patrol);
+        TurnAround();
+        _mustPatrol = true;
+      }
     }
   }
 
@@ -159,6 +176,8 @@ public class EnemyController : MonoBehaviour
   {
     if (_mustPatrol)
     {
+      anim.Play(AnimTypes.walking);
+
       if (points.Length > 0)
       {
         GotoNextPoint();
@@ -190,7 +209,7 @@ public class EnemyController : MonoBehaviour
 
   void VerifyHasPlayer()
   {
-    RaycastHit2D[] hits = Physics2D.RaycastAll(enemy.transform.position, !sp.flipX ? Vector2.right : Vector2.left, rayToIdentifyPlayer, playerLayer);
+    RaycastHit2D[] hits = Physics2D.RaycastAll(enemy.transform.position, !sp.flipX ? Vector2.right : Vector2.left, distanceToNotAtack, playerLayer);
 
     Debug.DrawRay(enemy.transform.position, !sp.flipX ? Vector2.right : Vector2.left);
 
@@ -202,13 +221,13 @@ public class EnemyController : MonoBehaviour
 
         if (playerTag)
         {
-          SwitchState(State.atack);
+          SwitchState(State.followPlayer);
         }
       }
     }
   }
 
-  void Atack()
+  void FollowPLayer()
   {
     var player = GameObject.Find("Player");
     var distance = Vector2.Distance(player.transform.position, enemy.transform.position);
@@ -218,7 +237,10 @@ public class EnemyController : MonoBehaviour
     if (distance > distanceToNotAtack)
     {
       SwitchState(State.idle);
+      return;
     }
+
+    anim.Play(AnimTypes.walking);
 
     if (player.transform.position.x < enemy.transform.position.x)
     {
@@ -229,11 +251,20 @@ public class EnemyController : MonoBehaviour
       sp.flipX = false;
     }
 
-    if (Vector2.Distance(enemy.transform.position, player.transform.position) < 0.2f)
+    if (Vector2.Distance(enemy.transform.position, player.transform.position) < 4f)
     {
-      //TODO ATACK ANimation
+      SwitchState(State.atack);
     }
+  }
 
+  void Attack()
+  {
+    anim.Play(AnimTypes.attack);
+
+    if (anim.GetCurrentAnimatorStateInfo(0).normalizedTime > 3 && !anim.IsInTransition(0))
+    {
+      SwitchState(State.followPlayer);
+    }
   }
 
   void OnCollisionEnter2D(Collision2D other)
@@ -306,5 +337,4 @@ public class EnemyController : MonoBehaviour
       Gizmos.DrawWireSphere(groundCheckPos.position, radius);
     }
   }
-
 }
