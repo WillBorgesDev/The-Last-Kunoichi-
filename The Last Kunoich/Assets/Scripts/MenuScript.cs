@@ -12,7 +12,7 @@ public class MenuScript : MonoBehaviour
     public Camera NewGame;
     public Camera NewExists;
     public Camera LoadGame;
-    public Camera config;
+    // public Camera config;
     public Camera credits;
 
     public Text txtExist;
@@ -23,6 +23,11 @@ public class MenuScript : MonoBehaviour
     void Start()
     {
         main.depth = 1;
+    }
+
+    public void OnClickStartV1()
+    {
+        SceneManager.LoadScene("RiceLevel");
     }
 
     public void OnClickStartGame()
@@ -119,11 +124,11 @@ public class MenuScript : MonoBehaviour
 
         SceneManager.LoadScene("SelectLevel");
     }
-    public void OnClickConfig()
-    {
-        main.depth = 0;
-        config.depth = 1;
-    }
+    // public void OnClickConfig()
+    // {
+        // main.depth = 0;
+        // config.depth = 1;
+    // }
     public void OnClickCredits()
     {
         main.depth = 0;
@@ -132,7 +137,7 @@ public class MenuScript : MonoBehaviour
     public void OnClickVoltar()
     {
         startGame.depth = 0;
-        config.depth = 0;
+        // config.depth = 0;
         credits.depth = 0;  
         main.depth = 1;
     }

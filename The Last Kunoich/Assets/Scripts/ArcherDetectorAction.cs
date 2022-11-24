@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class ArcherDetectorAction : MonoBehaviour
 {
+    [SerializeField] private LayerMask layerPlayer;
     // Start is called before the first frame update
     void Start()
     {
@@ -16,11 +17,19 @@ public class ArcherDetectorAction : MonoBehaviour
         
     }
 
-    void OnTriggerEnter2D(Collider2D collider)
-    {
-        if(collider.tag == "Player")
-        {
-            ArcherController.detected();
-        }
-    }
+    // private bool isPlay()
+    // {
+    //     RaycastHit2D playerR = Physics2D.BoxCast(bc2d.bounds.center, bc2d.bounds.size, 0, UnityEngine.Vector2.right, 0.1f, layerPlayer);
+    //     RaycastHit2D playerL = Physics2D.BoxCast(bc2d.bounds.center, bc2d.bounds.size, 0, UnityEngine.Vector2.left, 0.1f, layerPlayer);
+    //     if()
+    //     return (playerR.collider != null) || (playerL.collider != null);
+    // } 
+
+    // void OnTriggerEnter2D(Collider2D collider)
+    // {
+    //     if(collider.tag == "Player")
+    //     {
+    //         ArcherController.detected();
+    //     }
+    // }
 }

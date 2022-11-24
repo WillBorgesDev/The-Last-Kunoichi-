@@ -3,60 +3,73 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
- 
   //instance gameobject
-  public GameObject shuriken;
-  public GameObject bomb;
+  
+  
 	public Transform targetR;
   public Transform targetL;
   //Healt
   public float _maxHealth = 100f;
   private float _currentHealth;
 
-  //HUD
+  [Header("Life")]
   public Image _lifebar;
   public Image _redBar;
-  public Image shurikenCount;
-  public Image bombCount;
-  public Image dashCount;
-  private float timerSuriken = 5;
-  private float timerBomb = 5;
 
-  //Jump
+  [Header("Shuriken")]
+  public GameObject shuriken;
+  public GameObject shurikenCount;
+  public bool upShuriken;
+  private float timerSuriken = 1;
+  bool startCountShuriken;
+  bool hasShuriken = true;
+  bool throwAnim;
+
+  // [Header("Bomb")]
+  // public GameObject bomb;
+  // public GameObject bombCount;
+  // public bool upBomb;
+  // private float timerBomb = 5;
+  // 
+  // bool startCountBomb;
+  // bool hasBomb = true;
+
+  [Header("Dash")]
+  public GameObject dashCount;
+  public bool upDash;
+  bool startCountDash;
+  bool hasDash = true;
+  bool isDashing;
+  float dashSpeed = 12f;
+  float dashingTime = 0.2f;
+  float dashingCoolDown = 8f;
+
+  [Header("Move")]
   float speed = 6f;
   public bool onJump = false;
   private int nJump;
   float jumpSpeed = 12f;
   
 
-  //Weapon
+  [Header("Attack")]
   public bool basicAttack = false;
   public float _damage = 10;
   public static int targetSide;
-  bool startCountShuriken;
-  bool startCountBomb;
-  bool startCountDash;
-  bool hasShuriken = true;
-  bool hasBomb = true;
-  
-  //Dash
-  bool hasDash = true;
-  bool isDashing;
-  float dashSpeed = 12f;
-  float dashingTime = 0.2f;
-  float dashingCoolDown = 5f;
 
+  [Header("Others")]
+
+  public GameObject DeadPainel;
   [SerializeField] private LayerMask layerGround;
   [SerializeField] private LayerMask layerClimb;
-
   SpriteRenderer sprite;
   Rigidbody2D body;
   BoxCollider2D bc2d;
   Animator anim;
-
+//  public int iten;
 
   void Start()
   {
@@ -70,6 +83,7 @@ public class PlayerController : MonoBehaviour
     _redBar = GameObject.Find("RedBar").GetComponent<Image>();
 
     _currentHealth = _maxHealth;
+    initializeHabilities();
   }
 
   // Update is called once per frame
@@ -81,7 +95,7 @@ public class PlayerController : MonoBehaviour
     }
     Move();
     shurikenCoolDownTimer();
-    bombCoolDownTimer();
+    // bombCoolDownTimer();
     // MoveJoystick();
     if (Input.GetKeyDown(KeyCode.J))
       {
@@ -90,24 +104,42 @@ public class PlayerController : MonoBehaviour
       }
     if (Input.GetKeyDown(KeyCode.K) && hasShuriken == true)
       {
+        Trhow();
+        // iten = 1;
+      }
+    // if (Input.GetKeyDown(KeyCode.L) && hasBomb == true)
+    //   {
+    //     Trhow();
+    //     iten = 2;     
+    //   }
+  }
+  void Trhow()
+  {
+    throwAnim = true;
+    anim.Play("Throw");
+  }
+  public void finishThrow()
+  {
+    throwAnim = false;
+    // if(iten == 1)
+    //   {
         startCountShuriken = true;
         if(targetSide == 1){
-          Instantiate(shuriken, targetR.position, targetR.rotation);
-        } else {
-          Instantiate(shuriken, targetL.position, targetL.rotation);
-        } 
+            Instantiate(shuriken, targetR.position, targetR.rotation);
+          } else {
+            Instantiate(shuriken, targetL.position, targetL.rotation);
+          } 
         hasShuriken = false;
-      }
-    if (Input.GetKeyDown(KeyCode.L) && hasBomb == true)
-      {
-        startCountBomb = true;
-        if(targetSide == 1){
-          Instantiate(bomb, targetR.position, targetR.rotation);
-        } else {
-          Instantiate(bomb, targetL.position, targetL.rotation);
-        }
-        hasBomb = false;      
-      }
+      // } else if (iten == 2)
+      // {
+      //   startCountBomb = true;
+      //   if(targetSide == 1){
+      //     Instantiate(bomb, targetR.position, targetR.rotation);
+      //   } else {
+      //     Instantiate(bomb, targetL.position, targetL.rotation);
+      //   }
+      //   hasBomb = false; 
+      // }
   }
   void Move()
   {
@@ -125,7 +157,7 @@ public class PlayerController : MonoBehaviour
     float horizontal = Input.GetAxis("Horizontal");
     body.velocity = new UnityEngine.Vector2(horizontal * speed, body.velocity.y);
 
-    if (Input.GetKeyDown(KeyCode.H) && hasDash == true)
+    if (Input.GetKeyDown(KeyCode.L) && hasDash == true)
     {
       if(sprite.flipX == true)
       {
@@ -138,14 +170,14 @@ public class PlayerController : MonoBehaviour
     {
       targetSide = -1;
       shuriken.GetComponent<ShurikenController>().side = targetSide;
-      bomb.GetComponent<BombController>().side = targetSide;
+      // bomb.GetComponent<BombController>().side = targetSide;
       Flip();
     }
     else if (horizontal > 0 && sprite.flipX == true)
     {
       targetSide = 1;
       shuriken.GetComponent<ShurikenController>().side = targetSide;
-      bomb.GetComponent<BombController>().side = targetSide;
+      // bomb.GetComponent<BombController>().side = targetSide;
       Flip();
     }
 
@@ -166,28 +198,28 @@ public class PlayerController : MonoBehaviour
           hasShuriken = true;
         } 
       } else {
-        timerSuriken = 5;
+        timerSuriken = 1;
       }
   }
 
-  public void bombCoolDownTimer()
-  {
-    if(startCountBomb == true)
-      {
-        if(timerBomb > 0)
-        {
-          bombCount.GetComponent<Image>().color = new Color32(125,125,125,255);
-          timerBomb -= Time.deltaTime;
-        } else if(timerBomb <= 0)
-        {
-          startCountBomb = false;
-          bombCount.GetComponent<Image>().color = new Color32(255,255,255,255);
-          hasBomb = true;
-        } 
-      } else {
-        timerBomb = 5;
-      }
-  }
+  // public void bombCoolDownTimer()
+  // {
+  //   if(startCountBomb == true)
+  //     {
+  //       if(timerBomb > 0)
+  //       {
+  //         bombCount.GetComponent<Image>().color = new Color32(125,125,125,255);
+  //         timerBomb -= Time.deltaTime;
+  //       } else if(timerBomb <= 0)
+  //       {
+  //         startCountBomb = false;
+  //         bombCount.GetComponent<Image>().color = new Color32(255,255,255,255);
+  //         hasBomb = true;
+  //       } 
+  //     } else {
+  //       timerBomb = 5;
+  //     }
+  // }
 
   IEnumerator Dash()
   {
@@ -209,28 +241,35 @@ public class PlayerController : MonoBehaviour
   void PlayerAnimator()
     {
         // Iniciando animações do player
-        if(body.velocity.x == 0 && body.velocity.y == 0 && isGrounded() && !isClimb() && !basicAttack && !isDashing)
+        if(body.velocity.x == 0 && body.velocity.y == 0 && isGrounded() && !isClimb() && !basicAttack && !isDashing && !throwAnim)
         {
             anim.Play("idle");
             //Inicia a animação dela parada
-        }
-        else if(body.velocity.x != 0 && isGrounded() && !isClimb() && !basicAttack && !isDashing)
+        } else if (body.velocity.x == 0 && body.velocity.y == 0 && isGrounded() && !isClimb() && basicAttack && !isDashing && !throwAnim)
+        {
+          anim.Play("BasicAttack");
+        } else if(body.velocity.x != 0 && isGrounded() && !isClimb() && !basicAttack && !isDashing && !throwAnim)
         {
             anim.Play("Running");
             //Inicia a animação dela correndo 
-        } else if (body.velocity.x != 0 && isGrounded() && !isClimb() && basicAttack && !isDashing)
+        } else if (body.velocity.x != 0 && isGrounded() && !isClimb() && basicAttack && !isDashing && !throwAnim)
         {
            anim.Play("BasicAttack");
-        }
-        else if(body.velocity.y > 0 && !isGrounded() && !isClimb() && !isDashing) 
+        }else if(body.velocity.y > 0 && !isGrounded() && !isClimb() && !basicAttack && !isDashing && !throwAnim) 
         {
             anim.Play("Jump");
-        } else if (isClimb() && !basicAttack && !isDashing)
+        } else if(body.velocity.y > 0 && !isGrounded() && !isClimb() && basicAttack && !isDashing && !throwAnim) 
+        {
+            anim.Play("BasicAttack");
+        } else if(body.velocity.y < 0 && !isGrounded() && !isClimb() && !basicAttack && !isDashing && !throwAnim) 
+        {
+            anim.Play("Air Continuous");
+        } else if(body.velocity.y < 0 && !isGrounded() && !isClimb() && basicAttack && !isDashing && !throwAnim) 
+        {
+            anim.Play("BasicAttack");
+        } else if (isClimb() && !basicAttack && !isDashing && !throwAnim)
         {
           anim.Play("climb");
-        } else if (basicAttack && !isDashing)
-        {
-           anim.Play("BasicAttack");
         }
         
     }
@@ -256,30 +295,56 @@ public class PlayerController : MonoBehaviour
   {
     sprite.flipX = !sprite.flipX;
   }
-  // void OnTriggerEnter2D(Collision2D other)
-  // {
-  //   if (other.gameObject.tag == "Arrow")
-  //   {
-  //     var arrow = other.transform.GetComponent<ArrowAction>();
-
-  //     if (arrow != null)
-  //     {
-  //       arrow.TakeDamage(_damage);
-  //     }
-  //   }
-  // }
-
-  void OnCollisionEnter2D(Collision2D other)
+  void initializeHabilities()
   {
-    if (other.gameObject.tag == "Enemy")
-    {
-      var enemy = other.transform.GetComponent<EnemyController>();
-
-      if (enemy != null)
+      if(upShuriken == true)
       {
-        enemy.TakeDamage(_damage);
+        shurikenCount.SetActive(false);
+        hasShuriken = false;
+      } else {
+        shurikenCount.SetActive(true);
+        hasShuriken = true;
       }
+
+      // if(upBomb == true)
+      // {
+      //   bombCount.SetActive(false);
+      //   hasBomb = false;
+      // } else {
+      //   bombCount.SetActive(true);
+      //   hasBomb = true;
+      // }
+
+      if(upDash == true)
+      {
+        dashCount.SetActive(false);
+        hasDash = false;
+      } else {
+        dashCount.SetActive(true);
+        hasDash = true;
+      }
+  }
+
+  public void getUpgrade(int upgrade)
+  {
+    switch (upgrade)
+    {
+      case 1:
+      shurikenCount.SetActive(true);
+      hasShuriken = true;
+      break;
+      // case 2:
+      // bombCount.SetActive(true);
+      // hasBomb = true;
+      // break;
+      case 3:
+      dashCount.SetActive(true);
+      hasDash = true;
+      break;
+      default:
+      break;
     }
+    
   }
 
   public void TakeDamage(float damage)
@@ -302,7 +367,12 @@ public class PlayerController : MonoBehaviour
     {
       _currentHealth = Mathf.Clamp(_currentHealth - amount, 0, _maxHealth);
     }
-
+    //Die
+    if (_currentHealth <= 0)
+    {
+      death();
+      // SwitchState(State.Dead);
+    }
     Vector3 _lifebarScale = _lifebar.rectTransform.localScale;
     _lifebarScale.x = (float)_currentHealth / _maxHealth;
     _lifebar.rectTransform.localScale = _lifebarScale;
@@ -338,4 +408,26 @@ public class PlayerController : MonoBehaviour
   {
     anim.Play("Air Continuous");
   }
+  public void death()
+  {
+    DeadPainel.GetComponent<SceneController>().deathPainel();
+  }
+  void OnTriggerEnter2D(Collider2D other)
+    {
+      if(other.gameObject.tag == "LifeUp")
+        {
+          Heal(50);
+          Destroy(other.gameObject);
+        } else if(other.gameObject.tag == "FinishRice")
+        {
+          SceneManager.LoadScene("GunpowderLevel");
+        }else if(other.gameObject.tag == "FinishLevel2")
+        {
+          SceneManager.LoadScene("BossLevel");
+        }else if(other.gameObject.tag == "FinishBoss")
+        {
+          SceneManager.LoadScene("Credits");
+        } 
+    }
+  
 }

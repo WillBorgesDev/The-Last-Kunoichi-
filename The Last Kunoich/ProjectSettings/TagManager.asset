@@ -12,6 +12,12 @@ TagManager:
   - DashAttack
   - Shuriken
   - BombExplode
+  - RangedEnemy
+  - LifeUp
+  - FinishRice
+  - Boss
+  - FinishLevel2
+  - FinishBoss
   layers:
   - Default
   - TransparentFX
@@ -23,7 +29,7 @@ TagManager:
   - Player
   - Enemy
   - Explosion
-  - 
+  - Death
   - 
   - 
   - 

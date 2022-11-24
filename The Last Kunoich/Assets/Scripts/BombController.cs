@@ -10,6 +10,8 @@ public class BombController : MonoBehaviour
     public float forceY = 15;
     public float timer;
     public bool timeOn;
+    public bool fromPlayer;
+    public float _damage = 20;
     // public float forceX = 2;
     public int side;
 
@@ -54,5 +56,32 @@ public class BombController : MonoBehaviour
             }
         }
         
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.tag == "Player")
+        {
+            var player = other.transform.GetComponent<PlayerController>();  
+            if (player != null)
+            {
+                player.TakeDamage(_damage);
+            }
+        } else if (other.gameObject.tag == "Enemy")
+        {
+            var enemy = other.transform.GetComponent<EnemyController>();  
+            if (enemy != null)
+            {
+                enemy.TakeDamage(_damage);
+            }
+        } else if (other.gameObject.tag == "RangedEnemy")
+        {
+            var archer = other.transform.GetComponent<ArcherController>();  
+            if (archer != null)
+            {
+                archer.TakeDamage(_damage);
+            }
+        }
+
     }
 }

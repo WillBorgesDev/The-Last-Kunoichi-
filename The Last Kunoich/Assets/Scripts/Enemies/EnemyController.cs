@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
+
+  public static int flipState;
   enum State
   {
     idle,
@@ -20,7 +22,8 @@ public class EnemyController : MonoBehaviour
     public const string walking = "walking";
     public const string idle = "idle";
   }
-
+  public float positionY;
+  public bool isBoss;
   //Enemy
   [Header("Enemy")]
   private GameObject enemy;
@@ -48,8 +51,9 @@ public class EnemyController : MonoBehaviour
   private float _currentHealth;
   private Image _lifebarImage, _redBarImage;
 
+
   [Header("Atack")]
-  public float _damage = 10;
+  // public float _damage = 10;
   public float distanceToNotAtack = 5f;
 
   [Header("Ground Config")]
@@ -138,7 +142,6 @@ public class EnemyController : MonoBehaviour
       }
     }
   }
-
   void TurnAround()
   {
     if (points != null)
@@ -157,7 +160,7 @@ public class EnemyController : MonoBehaviour
       if (sp.flipX)
       {
         sp.flipX = false;
-        walkSpeed *= -1;
+        walkSpeed *= -1; 
       }
       else
       {
@@ -196,7 +199,7 @@ public class EnemyController : MonoBehaviour
 
   void GotoNextPoint()
   {
-    enemy.transform.position = Vector2.MoveTowards(new Vector2(enemy.transform.position.x, 1), new Vector2(points[destPoint].position.x, 1), walkSpeed * Time.deltaTime);
+    enemy.transform.position = Vector2.MoveTowards(new Vector2(enemy.transform.position.x, positionY), new Vector2(points[destPoint].position.x, positionY), walkSpeed * Time.deltaTime);
 
 
     if (Vector2.Distance(enemy.transform.position, points[destPoint].position) < 0.2f)
@@ -232,7 +235,7 @@ public class EnemyController : MonoBehaviour
     var player = GameObject.Find("Player");
     var distance = Vector2.Distance(player.transform.position, enemy.transform.position);
 
-    enemy.transform.position = Vector2.MoveTowards(new Vector2(enemy.transform.position.x, 1), player.transform.position, walkSpeed * Time.deltaTime);
+    enemy.transform.position = Vector2.MoveTowards(new Vector2(enemy.transform.position.x, positionY), player.transform.position, walkSpeed * Time.deltaTime);
 
     if (distance > distanceToNotAtack)
     {
@@ -245,13 +248,15 @@ public class EnemyController : MonoBehaviour
     if (player.transform.position.x < enemy.transform.position.x)
     {
       sp.flipX = true;
+      flipState = -1;
     }
     else
     {
       sp.flipX = false;
+      flipState = 1;
     }
 
-    if (Vector2.Distance(enemy.transform.position, player.transform.position) < 4f)
+    if (Vector2.Distance(enemy.transform.position, player.transform.position) < 2f)
     {
       SwitchState(State.atack);
     }
@@ -267,18 +272,18 @@ public class EnemyController : MonoBehaviour
     }
   }
 
-  void OnCollisionEnter2D(Collision2D other)
-  {
-    if (other.gameObject.tag == "Player")
-    {
-      var player = other.transform.GetComponent<PlayerController>();
+  // void OnCollisionEnter2D(Collision2D other)
+  // {
+  //   if (other.gameObject.tag == "Player")
+  //   {
+  //     var player = other.transform.GetComponent<PlayerController>();
 
-      if (player != null)
-      {
-        player.TakeDamage(_damage);
-      }
-    }
-  }
+  //     if (player != null)
+  //     {
+  //       player.TakeDamage(_damage);
+  //     }
+  //   }
+  // }
 
   public void TakeDamage(float damage)
   {

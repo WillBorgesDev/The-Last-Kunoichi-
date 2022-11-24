@@ -29,6 +29,7 @@ public class ArrowAction : MonoBehaviour
             if (player != null)
             {
                 player.TakeDamage(_damage);
+                Destroy(this.gameObject);
             }
         } else if (other.gameObject.tag == "BasicAtack")
         {

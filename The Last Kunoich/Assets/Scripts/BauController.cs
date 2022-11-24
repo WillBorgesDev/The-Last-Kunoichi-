@@ -8,9 +8,9 @@ public class BauController : MonoBehaviour
 
     SpriteRenderer sprite;
     Animator anim;
+    public int _whatUpgrade;
 
     public GameObject player;
-    private bool isPlayer = false;
     private bool stillOpen = false;
     public float fadeDuration;
     
@@ -24,23 +24,20 @@ public class BauController : MonoBehaviour
 
     void Update() 
     {
-
-        if(Input.GetKeyDown(KeyCode.W) && isPlayer == true)
-        {
-            anim.Play("Shuriken Open");
-            isPlayer = false;
-            stillOpen = true;       
-        }
     }
     
     void OnTriggerEnter2D(Collider2D other)
     {
         if(other.gameObject.tag == "Player")
         {
+            var player = other.transform.GetComponent<PlayerController>();
+            
             if(!stillOpen)
             {
-                isPlayer = true;
-            }
+                anim.Play("Shuriken Open");
+                stillOpen = true;
+                player.getUpgrade(_whatUpgrade); 
+            } 
             
         }
     }
